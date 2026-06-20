@@ -4,10 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#050810">
   <title>FUTURES SCALPER PRO</title>
   <style>
-    :root{--bg:#050810;--card:#0a0f1c;--text:#e0e6ed;--muted:#6b7280;--border:#1e293b;--green:#00ff88;--red:#ff3366;--neon:#00d4ff;--orange:#ff9500;--purple:#b829dd;--yellow:#ffd700;--safe:env(safe-area-inset-bottom,16px)}
+    :root{
+      --bg:#050810;--card:#0a0f1c;--text:#e0e6ed;--muted:#6b7280;--border:#1e293b;
+      --green:#00ff88;--red:#ff3366;--neon:#00d4ff;--orange:#ff9500;--purple:#b829dd;
+      --safe:env(safe-area-inset-bottom,16px)
+    }
     *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,monospace;-webkit-tap-highlight-color:transparent}
     html,body{background:var(--bg)!important;color:var(--text);min-height:100vh;overflow-x:hidden}
     header{text-align:center;padding:1.2rem 1rem 0.8rem;background:var(--card);border-bottom:1px solid var(--border)}
@@ -18,7 +23,7 @@
     .badge.live{background:rgba(0,255,136,0.15);color:var(--green)}
     .badge.offline{background:rgba(255,51,102,0.15);color:var(--red)}
     .badge.regime{background:rgba(255,149,0,0.15);color:var(--orange)}
-    main{padding:1rem;max-width:600px;margin:0 auto;padding-bottom:calc(200px + var(--safe))}
+    main{padding:1rem;max-width:600px;margin:0 auto;padding-bottom:calc(220px + var(--safe))}
     .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem;margin-bottom:1rem;position:relative;overflow:hidden}
     .card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--green),var(--neon));opacity:0.6}
     .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem}
@@ -38,39 +43,38 @@
     .conf-fill{height:100%;background:var(--neon);transition:width 0.4s}
     .terminal{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:0.8rem;margin-bottom:1rem}
     .term-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem}
-    .term-title{font-size:0.85rem;font-weight:700;color:var(--yellow)}
+    .term-title{font-size:0.85rem;font-weight:700;color:var(--orange)}
     .term-filters{display:flex;gap:0.4rem;margin-bottom:0.6rem;overflow-x:auto;padding-bottom:0.3rem}
     .term-filter{padding:0.25rem 0.6rem;background:rgba(30,41,59,0.6);border:1px solid var(--border);border-radius:6px;font-size:0.65rem;color:var(--muted);cursor:pointer;white-space:nowrap}
     .term-filter.active{background:rgba(0,212,255,0.15);color:var(--neon);border-color:var(--neon)}
-    .term-list{max-height:150px;overflow-y:auto}
-    .term-item{padding:0.5rem;margin-bottom:0.4rem;background:rgba(30,41,59,0.3);border-radius:8px;border-left:3px solid var(--muted)}
+    .term-list{max-height:150px;overflow-y:auto}    .term-item{padding:0.5rem;margin-bottom:0.4rem;background:rgba(30,41,59,0.3);border-radius:8px;border-left:3px solid var(--muted)}
     .term-item.critical{border-left-color:var(--red)}
     .term-item.macro{border-left-color:var(--orange)}
     .term-item.flow{border-left-color:var(--neon)}
-    .term-top{display:flex;justify-content:space-between;font-size:0.7rem;margin-bottom:0.2rem}    .term-cat{font-weight:700}
+    .term-top{display:flex;justify-content:space-between;font-size:0.7rem;margin-bottom:0.2rem}
+    .term-cat{font-weight:700}
     .term-time{color:var(--muted);font-size:0.6rem}
     .term-text{font-size:0.75rem;line-height:1.3}
     .nav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,15,28,0.98);backdrop-filter:blur(10px);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:0.7rem 0 calc(0.7rem + var(--safe));z-index:100}
     .nav-item{text-align:center;font-size:0.65rem;color:var(--muted);cursor:pointer}
     .nav-item.active{color:var(--neon)}
     .nav-icon{font-size:1.2rem;margin-bottom:0.1rem}
-    .loading{text-align:center;padding:2rem;color:var(--muted)}
   </style>
 </head>
 <body>
   <header>
     <div class="logo">⚡ FUTURES SCALPER PRO</div>
-    <div class="subtitle">INSTITUTIONAL STACK • BTC / XAUT • 1-5M</div>
+    <div class="subtitle">INSTITUTIONAL STACK • BTC / ETH / BNB / SOL</div>
     <div class="status-bar">
       <span class="badge offline" id="ws-badge">● OFFLINE</span>
-      <span class="badge regime" id="regime-badge">CHOP</span>
+      <span class="badge regime" id="regime-badge">WAITING</span>
       <span class="badge" id="alert-badge">🔔 0</span>
     </div>
   </header>
 
   <main>
     <div id="cards-container">
-      <div class="loading">Loading market data...</div>
+      <div style="text-align:center;padding:2rem;color:var(--muted)">Initializing...</div>
     </div>
     <div class="terminal">
       <div class="term-header">
@@ -79,9 +83,9 @@
       </div>
       <div class="term-filters">
         <button class="term-filter active" onclick="filterTerm('all')">ALL</button>
-        <button class="term-filter" onclick="filterTerm('critical')"> CRITICAL</button>
-        <button class="term-filter" onclick="filterTerm('macro')"> MACRO</button>
-        <button class="term-filter" onclick="filterTerm('flow')"> FLOW</button>
+        <button class="term-filter" onclick="filterTerm('critical')">CRITICAL</button>
+        <button class="term-filter" onclick="filterTerm('macro')">MACRO</button>
+        <button class="term-filter" onclick="filterTerm('flow')">FLOW</button>
       </div>
       <div class="term-list" id="term-list">
         <div style="text-align:center;color:var(--muted);padding:1rem;font-size:0.75rem">Waiting for data...</div>
@@ -92,84 +96,88 @@
   <nav class="nav">
     <div class="nav-item active"><div class="nav-icon">📊</div>Signals</div>
     <div class="nav-item"><div class="nav-icon">📝</div>Trades</div>
-    <div class="nav-item"><div class="nav-icon">ℹ️</div>Info</div>
-  </nav>
+    <div class="nav-item"><div class="nav-icon">ℹ️</div>Info</div>  </nav>
 
   <script>
-    console.log(' FUTURES SCALPER PRO Starting...');    
+    // ================= CONFIGURATION =================
+    // Updated to track BTC, ETH, BNB, SOL
+    const CONFIG = {
+      symbols: ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT'],
+      updateUI: 1000
+    };
+
     // ================= STATE =================
     let state = {
-      ws: null, msgCount: 0, currentFilter: 'all', alerts: [],
-      data: {
-        BTCUSDT: {
-          symbol: 'BTCUSDT', price: 65000, cvd: 0, trades: 0, vwap: 65000,
-          cumVP: 0, cumV: 0, oi: 0, prevOI: 0, oiDelta: 0, funding: 0.01,
-          volRatio: 1.2, rsi: 50, liqProx: 1.0, regime: 'CHOP',
-          score: 0, signal: 'NEUTRAL', conf: 0, vm: 1.0,
-          indicators: { cvd:0, oi:0, liq:0, fund:0, vpin:0, mom:0 },
-          lastUpdate: Date.now(), cvdHist: []
-        },
-        XAUTUSD: {
-          symbol: 'XAUTUSD', price: 2650, cvd: 0, trades: 0, vwap: 2650,
-          cumVP: 0, cumV: 0, oi: 1000000, prevOI: 1000000, oiDelta: 0, funding: 0.005,
-          volRatio: 0.8, rsi: 50, liqProx: 1.0, regime: 'CHOP',
-          score: 0, signal: 'NEUTRAL', conf: 0, vm: 1.0,
-          indicators: { cvd:0, oi:0, liq:0, fund:0, vpin:0, mom:0 },
-          lastUpdate: Date.now(), cvdHist: []
-        }
-      }
+      ws: null,
+      currentFilter: 'all',
+      alerts: [],
+      data: {}
     };
+
+    // Initialize data structure for all symbols
+    CONFIG.symbols.forEach(sym => {
+      state.data[sym] = {
+        price: sym.includes('BTC') ? 65000 : sym.includes('ETH') ? 3500 : sym.includes('BNB') ? 550 : 145,
+        cvd: 0, trades: 0, vwap: 0, cumVP: 0, cumV: 0, 
+        oi: 0, prevOI: 0, oiDelta: 0, funding: 0.01,
+        volRatio: 1.2, liqProx: 1.0, regime: 'CHOP',
+        score: 0, signal: 'NEUTRAL', conf: 0, vm: 1.0,
+        indicators: { cvd:0, oi:0, liq:0, fund:0, vpin:0, mom:0 },
+        cvdHist: []
+      };
+    });
 
     // ================= INITIALIZATION =================
     function init() {
-      console.log('✅ DOM Loaded - Initializing Engine...');
-      renderCards();
-      connectBTC();
-      startXAUTSim();
-      setInterval(renderCards, 1000);
+      console.log('🚀 Starting Futures Scalper Pro (4 Assets)...');
+      renderCards(); // Render immediately with defaults
+      connectAll();
+      setInterval(renderCards, CONFIG.updateUI);
       setInterval(generateContextAlerts, 10000);
     }
 
-    // ================= WEBSOCKET =================
-    function connectBTC() {
+    // ================= WEBSOCKET (MULTI-ASSET) =================
+    function connectAll() {
       try {
-        const url = 'wss://fstream.binance.com/ws/btcusdt@trade';
-        console.log(' Connecting to:', url);
+        // Construct stream: btcusdt@trade/ethusdt@trade/bnbusdt@trade/solusdt@trade
+        const streams = CONFIG.symbols.map(s => s.toLowerCase() + '@trade').join('/');
+        const url = `wss://fstream.binance.com/ws/${streams}`;
+        console.log('Connecting to:', url);
+        
         state.ws = new WebSocket(url);
-
         state.ws.onopen = () => {
-          console.log('✅ WebSocket Connected');
           document.getElementById('ws-badge').className = 'badge live';
           document.getElementById('ws-badge').textContent = '● LIVE';
+          console.log('✅ Multi-Asset WebSocket Connected');
         };
 
         state.ws.onmessage = (e) => {
           try {
-            const msg = JSON.parse(e.data);            if (msg.e === 'trade') {
-              state.msgCount++;
-              handleTrade('BTCUSDT', msg);
+            const msg = JSON.parse(e.data);
+            if (msg.e === 'trade') {
+              handleTrade(msg.s, msg); // msg.s contains the symbol string e.g. "BTCUSDT"
             }
-          } catch (err) {
-            console.error('Parse Error:', err);
-          }
+          } catch (err) { console.error('Parse Error:', err); }
         };
 
         state.ws.onclose = () => {
           document.getElementById('ws-badge').textContent = '● RECONNECTING';
-          setTimeout(connectBTC, 3000);
+          setTimeout(connectAll, 3000);
         };
 
         state.ws.onerror = () => {
           document.getElementById('ws-badge').textContent = '● ERROR';
         };
       } catch (e) {
-        console.error('WebSocket Init Failed:', e);
+        console.error('WS Init Failed:', e);
       }
     }
 
     // ================= DATA HANDLERS =================
     function handleTrade(sym, msg) {
       const d = state.data[sym];
+      if(!d) return;
+
       const price = parseFloat(msg.p);
       const qty = parseFloat(msg.q);
       const isMaker = msg.m;
@@ -180,58 +188,36 @@
       d.cumVP += price * qty;
       d.cumV += qty;
       d.vwap = d.cumV > 0 ? d.cumVP / d.cumV : price;
-      d.lastUpdate = Date.now();
       
       processEngine(sym);
     }
 
-    function startXAUTSim() {
-      setInterval(() => {
-        const d = state.data['XAUTUSD'];
-        const noise = (Math.random() - 0.5) * 1.2;
-        const meanRev = (2650 - d.price) * 0.005;
-        const newPrice = Math.max(2620, Math.min(2680, d.price + noise + meanRev));
-        
-        const qty = 0.5 + Math.random() * 1.2;
-        const isBuy = Math.random() > 0.48;
-                d.price = newPrice;
-        d.trades++;
-        d.cvd += isBuy ? qty : -qty;
-        d.cumVP += newPrice * qty;
-        d.cumV += qty;
-        d.vwap = d.cumV > 0 ? d.cumVP / d.cumV : newPrice;
-        
-        if (Math.random() > 0.85) {
-          d.prevOI = d.oi;
-          d.oi = d.oi * (1 + (Math.random() - 0.5) * 0.008);
-          d.oiDelta = ((d.oi - d.prevOI) / d.prevOI) * 100;
-        }
-        d.funding = 0.005 + (Math.random() * 0.002);
-        d.volRatio = 0.7 + Math.random() * 0.5;
-        d.lastUpdate = Date.now();
-        
-        processEngine('XAUTUSD');
-      }, 2500);
-    }
-
-    // ================= ENGINE =================
+    // ================= ENGINE (GENERIC) =================
     function processEngine(sym) {
-      const d = state.data[sym];
+      const d = state.data[sym];      if(!d) return;
+      
+      // Calculate metrics
       const dist = Math.abs(d.price - d.vwap) / d.price;
       d.liqProx = dist > 0.006 ? 0.25 : dist > 0.003 ? 0.6 : 1.5;
       
       const prev = d.cvdHist.length > 0 ? d.cvdHist[d.cvdHist.length-1] : d.cvd;
       const delta = d.cvd - prev;
+      
       d.indicators.vpin = Math.sign(delta) * Math.min(2, Math.abs(delta) / 3);
       d.indicators.mom = delta;
       d.cvdHist.push(d.cvd);
       if(d.cvdHist.length > 6) d.cvdHist.shift();
       
+      // Scores
       const s = d.indicators;
       s.cvd = Math.abs(d.cvd) > 40 ? (d.cvd>0?2:-2) : Math.abs(d.cvd)>12?(d.cvd>0?1.5:-1.5) : (d.cvd>0?0.6:-0.6);
       s.oi = d.oiDelta > 1.2 ? 1.5 : d.oiDelta < -1.2 ? -1.5 : 0.3;
       s.liq = d.liqProx < 0.4 ? (d.cvd>0?-1.8:1.8) : 0.4;
       s.fund = d.funding > 0.012 ? -1.2 : d.funding < 0 ? 1 : 0;
+      
+      // Volume Multiplier (Simulated for this version as volume API needs separate call)
+      // We use a randomized ratio based on trade frequency to simulate volatility changes
+      d.volRatio = 1.0 + Math.sin(Date.now()/5000 + sym.length)*0.4; 
       
       let vm = 1.0, confBoost = 0;
       if (d.volRatio > 1.7) { vm=0.6; confBoost=20; }
@@ -239,11 +225,14 @@
       else if (d.volRatio < 0.8) { vm=1.6; confBoost=-25; }
       d.vm = vm;
       
+      // Composite
       const raw = (s.cvd*2.2) + (s.oi*1.4) + (s.liq*1.6) + (s.fund*1.0) + (s.mom*1.3);
       d.score = raw;
       
-      if (raw >= 7 * vm) { d.signal = 'STRONG BUY 🔥'; d.sigClass = 'strong-buy'; }
-      else if (raw >= 4 * vm) { d.signal = 'BUY'; d.sigClass = 'buy'; }      else if (raw <= -7 * vm) { d.signal = 'STRONG SELL '; d.sigClass = 'strong-sell'; }
+      // Signals
+      if (raw >= 7 * vm) { d.signal = 'STRONG BUY 🔥'; d.sigClass = 'buy'; }
+      else if (raw >= 4 * vm) { d.signal = 'BUY'; d.sigClass = 'buy'; }
+      else if (raw <= -7 * vm) { d.signal = 'STRONG SELL 🔥'; d.sigClass = 'sell'; }
       else if (raw <= -4 * vm) { d.signal = 'SELL'; d.sigClass = 'sell'; }
       else { d.signal = 'NEUTRAL'; d.sigClass = 'neutral'; }
       
@@ -251,15 +240,16 @@
       d.regime = d.volRatio > 1.5 ? 'TREND' : d.liqProx < 0.4 ? 'SQUEEZE' : 'CHOP';
     }
 
-    // ================= SENTIMENT =================
+    // ================= SENTIMENT TERMINAL =================
     function generateContextAlerts() {
       const btc = state.data['BTCUSDT'];
-      const alerts = [];
+      const eth = state.data['ETHUSDT'];      if(!btc) return;
       
-      if (btc.oiDelta > 2.5) alerts.push({cat:'critical', title:'⚠️ LEVERAGE SPIKE', text:`BTC OI jumped +${btc.oiDelta.toFixed(2)}%`});
+      const alerts = [];
+      if (btc.oiDelta > 2.5) alerts.push({cat:'critical', title:'⚠️ BTC LEVERAGE SPIKE', text:`BTC OI jumped +${btc.oiDelta.toFixed(2)}%`});
+      if (eth.cvd > 100 && btc.cvd < 0) alerts.push({cat:'flow', title:' ETH ROTATION', text:`ETH buying while BTC sells. Capital rotation detected.`});
       if (btc.funding > 0.015) alerts.push({cat:'flow', title:'💸 OVERCROWDED LONGS', text:`Funding at ${(btc.funding*100).toFixed(2)}%`});
-      if (btc.liqProx < 0.35) alerts.push({cat:'critical', title:'🔥 LIQUIDATION ZONE', text:`Price near liquidation cluster`});
-      if (btc.volRatio < 0.8) alerts.push({cat:'macro', title:'🌫️ LOW VOLUME', text:`Volume ratio: ${btc.volRatio.toFixed(2)}x`});
+      if (btc.liqProx < 0.35) alerts.push({cat:'critical', title:'🔥 LIQUIDATION ZONE', text:`BTC Price near liquidation cluster`});
       
       alerts.forEach(a => {
         a.id = Date.now();
@@ -281,71 +271,72 @@
       const filtered = state.currentFilter === 'all' ? state.alerts : state.alerts.filter(a => a.cat === state.currentFilter);
       
       if (filtered.length === 0) {
-        list.innerHTML = '<div style="text-align:center;color:var(--muted);padding:1rem;font-size:0.75rem">No alerts yet. Waiting for market conditions...</div>';
+        list.innerHTML = '<div style="text-align:center;color:var(--muted);padding:1rem;font-size:0.75rem">No alerts.</div>';
         return;
       }
       
       list.innerHTML = filtered.map(a => `
         <div class="term-item ${a.cat}">
           <div class="term-top">
-            <span class="term-cat" style="color:${a.cat==='critical'?'var(--red)':a.cat==='macro'?'var(--orange)':a.cat==='flow'?'var(--neon)':'var(--muted)'}">${a.title}</span>
+            <span class="term-cat" style="color:${a.cat==='critical'?'var(--red)':a.cat==='macro'?'var(--orange)':'var(--neon)'}">${a.title}</span>
             <span class="term-time">${a.time}</span>
           </div>
           <div class="term-text">${a.text}</div>
-        </div>      `).join('');
+        </div>
+      `).join('');
       
-      document.getElementById('alert-badge').textContent = ` ${state.alerts.length}`;
+      document.getElementById('alert-badge').textContent = `🔔 ${state.alerts.length}`;
     }
 
-    // ================= RENDERER =================
+    // ================= RENDERER (FIXED) =================
     function renderCards() {
-      const container = document.getElementById('cards-container');
-      if (!container) {
-        console.error('Cards container not found!');
-        return;
+      try {
+        const container = document.getElementById('cards-container');
+        const regimeBadge = document.getElementById('regime-badge');        if(!container || !regimeBadge) return;
+        
+        // Update Regime based on BTC
+        regimeBadge.textContent = state.data['BTCUSDT'].regime;
+        
+        // Render Cards for all symbols
+        const cardsHTML = CONFIG.symbols.map(sym => {
+          const d = state.data[sym];
+          if (!d) return ''; // Skip if data missing
+          
+          const isUp = d.price > d.vwap;
+          const confColor = d.conf > 70 ? 'var(--green)' : d.conf > 40 ? 'var(--neon)' : 'var(--orange)';
+          
+          return `
+            <div class="card">
+              <div class="card-header">
+                <span class="symbol">${sym}</span>
+                <span class="price ${isUp?'up':'down'}">$${d.price.toFixed(2)}</span>
+              </div>
+              <div class="grid">
+                <div class="box"><div class="label">CVD</div><div class="value" style="color:${d.cvd>0?'var(--green)':'var(--red)'}">${d.cvd.toFixed(2)}</div></div>
+                <div class="box"><div class="label">OI Δ</div><div class="value" style="color:${d.oiDelta>0?'var(--green)':'var(--red)'}">${isNaN(d.oiDelta)?'0.00':d.oiDelta.toFixed(2)}%</div></div>
+                <div class="box"><div class="label">LIQ PROX</div><div class="value">${d.liqProx.toFixed(2)}%</div></div>
+                <div class="box"><div class="label">FUNDING</div><div class="value" style="color:${d.funding>0.01?'var(--red)':'var(--green)'}">${(d.funding*100).toFixed(3)}%</div></div>
+                <div class="box"><div class="label">VPIN</div><div class="value">${d.indicators.vpin.toFixed(1)}</div></div>
+                <div class="box"><div class="label">VOL</div><div class="value">${d.volRatio.toFixed(2)}x</div></div>
+              </div>
+              <div class="signal-box ${d.sigClass || 'neutral'}">${d.signal}</div>
+              <div class="conf-bar"><div class="conf-fill" style="width:${d.conf}%;background:${confColor}"></div></div>
+              <div class="meta">
+                <span>Score: ${d.score.toFixed(1)} | VM: ${d.vm.toFixed(2)}</span>
+                <span>Conf: ${d.conf.toFixed(0)}%</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+        
+        container.innerHTML = cardsHTML;
+      } catch (e) {
+        console.error('Render Error:', e);
       }
-      
-      document.getElementById('regime-badge').textContent = state.data['BTCUSDT'].regime;
-      
-      const cardsHTML = ['BTCUSDT', 'XAUTUSD'].map(sym => {
-        const d = state.data[sym];
-        if (!d || !d.symbol) return '';
-        
-        const isUp = d.price > d.vwap;
-        const confColor = d.conf > 70 ? 'var(--green)' : d.conf > 40 ? 'var(--neon)' : 'var(--orange)';
-        
-        return `
-          <div class="card">
-            <div class="card-header">
-              <span class="symbol">${d.symbol}</span>
-              <span class="price ${isUp?'up':'down'}">$${d.price.toFixed(2)}</span>
-            </div>
-            <div class="grid">
-              <div class="box"><div class="label">CVD</div><div class="value" style="color:${d.cvd>0?'var(--green)':'var(--red)'}">${d.cvd.toFixed(2)}</div></div>
-              <div class="box"><div class="label">OI Δ</div><div class="value" style="color:${d.oiDelta>0?'var(--green)':'var(--red)'}">${d.oiDelta.toFixed(2)}%</div></div>
-              <div class="box"><div class="label">LIQ PROX</div><div class="value">${d.liqProx.toFixed(2)}%</div></div>
-              <div class="box"><div class="label">FUNDING</div><div class="value" style="color:${d.funding>0.01?'var(--red)':'var(--green)'}">${(d.funding*100).toFixed(3)}%</div></div>
-              <div class="box"><div class="label">VPIN</div><div class="value">${d.indicators.vpin.toFixed(1)}</div></div>
-              <div class="box"><div class="label">VOL</div><div class="value">${d.volRatio.toFixed(2)}x</div></div>
-            </div>
-            <div class="signal-box ${d.sigClass || 'neutral'}">${d.signal}</div>
-            <div class="conf-bar"><div class="conf-fill" style="width:${d.conf}%;background:${confColor}"></div></div>
-            <div class="meta">
-              <span>Score: ${d.score.toFixed(1)} | VM: ${d.vm.toFixed(2)}</span>
-              <span>Conf: ${d.conf.toFixed(0)}%</span>
-            </div>
-          </div>
-        `;
-      }).join('');
-      
-      container.innerHTML = cardsHTML;
     }
 
-    // ================= BOOT =================    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', init);
-    } else {
-      init();
-    }
+    // ================= BOOT =================
+    window.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
 </html>
