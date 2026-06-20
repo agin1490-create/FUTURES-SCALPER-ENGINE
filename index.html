@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#050810">
   <title>FUTURES SCALPER PRO</title>
   <style>
@@ -19,7 +18,6 @@
     .badge.live{background:rgba(0,255,136,0.15);color:var(--green)}
     .badge.offline{background:rgba(255,51,102,0.15);color:var(--red)}
     .badge.regime{background:rgba(255,149,0,0.15);color:var(--orange)}
-    .badge.squeeze{background:rgba(184,41,221,0.15);color:var(--purple)}
     main{padding:1rem;max-width:600px;margin:0 auto;padding-bottom:calc(200px + var(--safe))}
     .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem;margin-bottom:1rem;position:relative;overflow:hidden}
     .card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--green),var(--neon));opacity:0.6}
@@ -35,37 +33,28 @@
     .signal-box.buy{background:rgba(0,255,136,0.1);color:var(--green);border-color:var(--green)}
     .signal-box.sell{background:rgba(255,51,102,0.1);color:var(--red);border-color:var(--red)}
     .signal-box.neutral{background:rgba(255,149,0,0.05);color:var(--orange);border-color:var(--orange)}
-    .signal-box.strong-buy{background:rgba(0,255,136,0.2);color:var(--green);border-color:var(--green);box-shadow:0 0 15px rgba(0,255,136,0.2)}
-    .signal-box.strong-sell{background:rgba(255,51,102,0.2);color:var(--red);border-color:var(--red);box-shadow:0 0 15px rgba(255,51,102,0.2)}
     .meta{display:flex;justify-content:space-between;font-size:0.65rem;color:var(--muted);margin-top:0.4rem}
     .conf-bar{height:4px;background:#1e293b;border-radius:2px;margin-top:0.4rem;overflow:hidden}
     .conf-fill{height:100%;background:var(--neon);transition:width 0.4s}
-    
-    /* SENTIMENT TERMINAL */
     .terminal{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:0.8rem;margin-bottom:1rem}
     .term-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem}
     .term-title{font-size:0.85rem;font-weight:700;color:var(--yellow)}
     .term-filters{display:flex;gap:0.4rem;margin-bottom:0.6rem;overflow-x:auto;padding-bottom:0.3rem}
     .term-filter{padding:0.25rem 0.6rem;background:rgba(30,41,59,0.6);border:1px solid var(--border);border-radius:6px;font-size:0.65rem;color:var(--muted);cursor:pointer;white-space:nowrap}
-    .term-filter.active{background:rgba(0,212,255,0.15);color:var(--neon);border-color:var(--neon)}    .term-list{max-height:180px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
-    .term-item{padding:0.5rem;margin-bottom:0.4rem;background:rgba(30,41,59,0.3);border-radius:8px;border-left:3px solid var(--muted);cursor:pointer;transition:all 0.2s}
+    .term-filter.active{background:rgba(0,212,255,0.15);color:var(--neon);border-color:var(--neon)}
+    .term-list{max-height:150px;overflow-y:auto}
+    .term-item{padding:0.5rem;margin-bottom:0.4rem;background:rgba(30,41,59,0.3);border-radius:8px;border-left:3px solid var(--muted)}
     .term-item.critical{border-left-color:var(--red)}
     .term-item.macro{border-left-color:var(--orange)}
     .term-item.flow{border-left-color:var(--neon)}
-    .term-item.chain{border-left-color:var(--green)}
-    .term-top{display:flex;justify-content:space-between;font-size:0.7rem;margin-bottom:0.2rem}
-    .term-cat{font-weight:700}
+    .term-top{display:flex;justify-content:space-between;font-size:0.7rem;margin-bottom:0.2rem}    .term-cat{font-weight:700}
     .term-time{color:var(--muted);font-size:0.6rem}
-    .term-text{font-size:0.75rem;line-height:1.3;color:var(--text)}
-    .term-detail{font-size:0.65rem;color:var(--muted);margin-top:0.3rem;padding-top:0.3rem;border-top:1px dashed var(--border);display:none}
-    .term-item.expanded .term-detail{display:block}
-    .term-empty{text-align:center;color:var(--muted);font-size:0.75rem;padding:1rem}
-    
+    .term-text{font-size:0.75rem;line-height:1.3}
     .nav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,15,28,0.98);backdrop-filter:blur(10px);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:0.7rem 0 calc(0.7rem + var(--safe));z-index:100}
     .nav-item{text-align:center;font-size:0.65rem;color:var(--muted);cursor:pointer}
     .nav-item.active{color:var(--neon)}
     .nav-icon{font-size:1.2rem;margin-bottom:0.1rem}
-    @media(max-width:400px){.grid{grid-template-columns:1fr 1fr}}
+    .loading{text-align:center;padding:2rem;color:var(--muted)}
   </style>
 </head>
 <body>
@@ -80,23 +69,25 @@
   </header>
 
   <main>
-    <div id="cards-container"></div>
+    <div id="cards-container">
+      <div class="loading">Loading market data...</div>
+    </div>
     <div class="terminal">
       <div class="term-header">
         <span class="term-title">📡 MICRO-SENTIMENT TERMINAL</span>
-        <span style="font-size:0.65rem;color:var(--muted)">Real-time institutional context</span>
+        <span style="font-size:0.65rem;color:var(--muted)">Real-time context</span>
       </div>
       <div class="term-filters">
         <button class="term-filter active" onclick="filterTerm('all')">ALL</button>
-        <button class="term-filter" onclick="filterTerm('critical')">🔴 CRITICAL</button>
-        <button class="term-filter" onclick="filterTerm('macro')">🟡 MACRO</button>
-        <button class="term-filter" onclick="filterTerm('flow')">🔵 FLOW</button>
-        <button class="term-filter" onclick="filterTerm('chain')">🟢 ON-CHAIN</button>
+        <button class="term-filter" onclick="filterTerm('critical')"> CRITICAL</button>
+        <button class="term-filter" onclick="filterTerm('macro')"> MACRO</button>
+        <button class="term-filter" onclick="filterTerm('flow')"> FLOW</button>
       </div>
       <div class="term-list" id="term-list">
-        <div class="term-empty">Waiting for market context...</div>
+        <div style="text-align:center;color:var(--muted);padding:1rem;font-size:0.75rem">Waiting for data...</div>
       </div>
-    </div>  </main>
+    </div>
+  </main>
 
   <nav class="nav">
     <div class="nav-item active"><div class="nav-icon">📊</div>Signals</div>
@@ -105,121 +96,105 @@
   </nav>
 
   <script>
-    // ================= CONFIGURATION =================
-    const CONFIG = {
-      assets: [
-        { symbol: 'BTCUSDT', name: 'BTC', ws: 'btcusdt@trade', rest: 'https://fapi.binance.com/fapi/v1' },
-        { symbol: 'XAUTUSD', name: 'XAUT', ws: null, simulated: true }
-      ],
-      thresholds: { baseBuy: 4.0, baseSell: -4.0, strongBuy: 7.0, strongSell: -7.0 },
-      updateUI: 1000
-    };
-
+    console.log(' FUTURES SCALPER PRO Starting...');    
     // ================= STATE =================
     let state = {
-      ws: null, msgCount: 0, currentFilter: 'all',
-      alerts: [],
-      data: {}
+      ws: null, msgCount: 0, currentFilter: 'all', alerts: [],
+      data: {
+        BTCUSDT: {
+          symbol: 'BTCUSDT', price: 65000, cvd: 0, trades: 0, vwap: 65000,
+          cumVP: 0, cumV: 0, oi: 0, prevOI: 0, oiDelta: 0, funding: 0.01,
+          volRatio: 1.2, rsi: 50, liqProx: 1.0, regime: 'CHOP',
+          score: 0, signal: 'NEUTRAL', conf: 0, vm: 1.0,
+          indicators: { cvd:0, oi:0, liq:0, fund:0, vpin:0, mom:0 },
+          lastUpdate: Date.now(), cvdHist: []
+        },
+        XAUTUSD: {
+          symbol: 'XAUTUSD', price: 2650, cvd: 0, trades: 0, vwap: 2650,
+          cumVP: 0, cumV: 0, oi: 1000000, prevOI: 1000000, oiDelta: 0, funding: 0.005,
+          volRatio: 0.8, rsi: 50, liqProx: 1.0, regime: 'CHOP',
+          score: 0, signal: 'NEUTRAL', conf: 0, vm: 1.0,
+          indicators: { cvd:0, oi:0, liq:0, fund:0, vpin:0, mom:0 },
+          lastUpdate: Date.now(), cvdHist: []
+        }
+      }
     };
-
-    // Initialize data structures with explicit symbol property
-    CONFIG.assets.forEach(a => {
-      state.data[a.symbol] = {
-        symbol: a.symbol, price: a.symbol === 'BTCUSDT' ? 65000 : 2650,
-        cvd: 0, trades: 0, vwap: 0, cumVP: 0, cumV: 0,
-        oi: 0, prevOI: 0, oiDelta: 0, funding: 0,
-        volRatio: 1, rsi: 50, liqProx: 1.0, regime: 'CHOP',
-        score: 0, signal: 'NEUTRAL', conf: 0, vm: 1.0,
-        indicators: { cvd:0, oi:0, liq:0, fund:0, vpin:0, mom:0 },
-        lastUpdate: Date.now(), cvdHist: []
-      };
-    });
 
     // ================= INITIALIZATION =================
     function init() {
-      console.log('🚀 Futures Scalper Pro Initializing...');
+      console.log('✅ DOM Loaded - Initializing Engine...');
       renderCards();
       connectBTC();
       startXAUTSim();
-      setInterval(renderCards, CONFIG.updateUI);
-      setInterval(generateContextAlerts, 8000); // Context alerts every 8s
+      setInterval(renderCards, 1000);
+      setInterval(generateContextAlerts, 10000);
     }
 
-    // ================= WEBSOCKET (BTC) =================    function connectBTC() {
-      const url = `wss://fstream.binance.com/ws/${CONFIG.assets[0].ws}`;
-      document.getElementById('ws-badge').textContent = '● CONNECTING...';
-      
+    // ================= WEBSOCKET =================
+    function connectBTC() {
       try {
+        const url = 'wss://fstream.binance.com/ws/btcusdt@trade';
+        console.log(' Connecting to:', url);
         state.ws = new WebSocket(url);
-      } catch(e) {
-        console.error('WS Init Failed:', e);
-        return;
-      }
 
-      state.ws.onopen = () => {
-        document.getElementById('ws-badge').className = 'badge live';
-        document.getElementById('ws-badge').textContent = '● LIVE';
-        fetchRestData();
-        setInterval(fetchRestData, 15000);
-      };
+        state.ws.onopen = () => {
+          console.log('✅ WebSocket Connected');
+          document.getElementById('ws-badge').className = 'badge live';
+          document.getElementById('ws-badge').textContent = '● LIVE';
+        };
 
-      state.ws.onmessage = (e) => {
-        try {
-          const msg = JSON.parse(e.data);
-          if (msg.e === 'trade') {
-            state.msgCount++;
-            handleTrade('BTCUSDT', msg);
+        state.ws.onmessage = (e) => {
+          try {
+            const msg = JSON.parse(e.data);            if (msg.e === 'trade') {
+              state.msgCount++;
+              handleTrade('BTCUSDT', msg);
+            }
+          } catch (err) {
+            console.error('Parse Error:', err);
           }
-        } catch (err) { console.error('BTC Parse:', err); }
-      };
+        };
 
-      state.ws.onerror = () => {
-        document.getElementById('ws-badge').className = 'badge offline';
-        document.getElementById('ws-badge').textContent = '● ERROR';
-      };
+        state.ws.onclose = () => {
+          document.getElementById('ws-badge').textContent = '● RECONNECTING';
+          setTimeout(connectBTC, 3000);
+        };
 
-      state.ws.onclose = () => {
-        document.getElementById('ws-badge').className = 'badge offline';
-        document.getElementById('ws-badge').textContent = '● RECONNECTING';
-        setTimeout(connectBTC, 3000);
-      };
-    }
-
-    // ================= REST DATA =================
-    async function fetchRestData() {
-      try {
-        const res = await fetch(`${CONFIG.assets[0].rest}/openInterest?symbol=BTCUSDT`);
-        const data = await res.json();
-        const d = state.data['BTCUSDT'];
-        d.prevOI = d.oi || parseFloat(data.openInterest);
-        d.oi = parseFloat(data.openInterest);
-        d.oiDelta = ((d.oi - d.prevOI) / d.prevOI) * 100;
-        d.funding = 0.01 + (Math.random() - 0.5) * 0.008;      } catch (e) { console.warn('REST Fetch Blocked:', e); }
+        state.ws.onerror = () => {
+          document.getElementById('ws-badge').textContent = '● ERROR';
+        };
+      } catch (e) {
+        console.error('WebSocket Init Failed:', e);
+      }
     }
 
     // ================= DATA HANDLERS =================
     function handleTrade(sym, msg) {
       const d = state.data[sym];
-      const price = parseFloat(msg.p), qty = parseFloat(msg.q), isMaker = msg.m;
+      const price = parseFloat(msg.p);
+      const qty = parseFloat(msg.q);
+      const isMaker = msg.m;
+
       d.price = price;
       d.trades++;
       d.cvd += isMaker ? -qty : qty;
       d.cumVP += price * qty;
       d.cumV += qty;
       d.vwap = d.cumV > 0 ? d.cumVP / d.cumV : price;
+      d.lastUpdate = Date.now();
+      
       processEngine(sym);
     }
 
     function startXAUTSim() {
       setInterval(() => {
         const d = state.data['XAUTUSD'];
-        const noise = (Math.random() - 0.5) * 1.8;
-        const meanRev = (2650 - d.price) * 0.003;
-        const newPrice = Math.max(2600, Math.min(2700, d.price + noise + meanRev));
-        const qty = 0.6 + Math.random() * 1.5;
-        const isBuy = Math.random() > 0.48;
+        const noise = (Math.random() - 0.5) * 1.2;
+        const meanRev = (2650 - d.price) * 0.005;
+        const newPrice = Math.max(2620, Math.min(2680, d.price + noise + meanRev));
         
-        d.price = newPrice;
+        const qty = 0.5 + Math.random() * 1.2;
+        const isBuy = Math.random() > 0.48;
+                d.price = newPrice;
         d.trades++;
         d.cvd += isBuy ? qty : -qty;
         d.cumVP += newPrice * qty;
@@ -228,25 +203,23 @@
         
         if (Math.random() > 0.85) {
           d.prevOI = d.oi;
-          d.oi = d.oi * (1 + (Math.random() - 0.5) * 0.015);
+          d.oi = d.oi * (1 + (Math.random() - 0.5) * 0.008);
           d.oiDelta = ((d.oi - d.prevOI) / d.prevOI) * 100;
         }
-        d.funding = 0.005 + (Math.random() * 0.003);
+        d.funding = 0.005 + (Math.random() * 0.002);
+        d.volRatio = 0.7 + Math.random() * 0.5;
+        d.lastUpdate = Date.now();
+        
         processEngine('XAUTUSD');
-      }, 2000);
+      }, 2500);
     }
 
-    // ================= INSTITUTIONAL ENGINE =================
+    // ================= ENGINE =================
     function processEngine(sym) {
       const d = state.data[sym];
-      
-      // Volume Ratio (simulated context-aware)
-      d.volRatio = 1.0 + Math.sin(Date.now()/5000)*0.4 + (Math.random()*0.3);
-      
-      // Liq Proximity (price vs VWAP distance = liquidation risk proxy)      const dist = Math.abs(d.price - d.vwap) / d.price;
+      const dist = Math.abs(d.price - d.vwap) / d.price;
       d.liqProx = dist > 0.006 ? 0.25 : dist > 0.003 ? 0.6 : 1.5;
       
-      // VPIN / Toxicity (CVD acceleration)
       const prev = d.cvdHist.length > 0 ? d.cvdHist[d.cvdHist.length-1] : d.cvd;
       const delta = d.cvd - prev;
       d.indicators.vpin = Math.sign(delta) * Math.min(2, Math.abs(delta) / 3);
@@ -254,62 +227,47 @@
       d.cvdHist.push(d.cvd);
       if(d.cvdHist.length > 6) d.cvdHist.shift();
       
-      // Individual Scores
       const s = d.indicators;
       s.cvd = Math.abs(d.cvd) > 40 ? (d.cvd>0?2:-2) : Math.abs(d.cvd)>12?(d.cvd>0?1.5:-1.5) : (d.cvd>0?0.6:-0.6);
       s.oi = d.oiDelta > 1.2 ? 1.5 : d.oiDelta < -1.2 ? -1.5 : 0.3;
       s.liq = d.liqProx < 0.4 ? (d.cvd>0?-1.8:1.8) : 0.4;
       s.fund = d.funding > 0.012 ? -1.2 : d.funding < 0 ? 1 : 0;
       
-      // Dynamic Volume Multiplier
       let vm = 1.0, confBoost = 0;
       if (d.volRatio > 1.7) { vm=0.6; confBoost=20; }
       else if (d.volRatio > 1.2) { vm=0.8; confBoost=10; }
       else if (d.volRatio < 0.8) { vm=1.6; confBoost=-25; }
       d.vm = vm;
       
-      // Composite Score
       const raw = (s.cvd*2.2) + (s.oi*1.4) + (s.liq*1.6) + (s.fund*1.0) + (s.mom*1.3);
       d.score = raw;
       
-      // Signal Generation
-      const buyThresh = CONFIG.thresholds.baseBuy * vm;
-      const sellThresh = CONFIG.thresholds.baseSell * vm;
-      
-      if (raw >= CONFIG.thresholds.strongBuy * vm) { d.signal = 'STRONG BUY 🔥'; d.sigClass = 'strong-buy'; }
-      else if (raw >= buyThresh) { d.signal = 'BUY'; d.sigClass = 'buy'; }
-      else if (raw <= CONFIG.thresholds.strongSell * vm) { d.signal = 'STRONG SELL 🔥'; d.sigClass = 'strong-sell'; }
-      else if (raw <= sellThresh) { d.signal = 'SELL'; d.sigClass = 'sell'; }
+      if (raw >= 7 * vm) { d.signal = 'STRONG BUY 🔥'; d.sigClass = 'strong-buy'; }
+      else if (raw >= 4 * vm) { d.signal = 'BUY'; d.sigClass = 'buy'; }      else if (raw <= -7 * vm) { d.signal = 'STRONG SELL '; d.sigClass = 'strong-sell'; }
+      else if (raw <= -4 * vm) { d.signal = 'SELL'; d.sigClass = 'sell'; }
       else { d.signal = 'NEUTRAL'; d.sigClass = 'neutral'; }
       
       d.conf = Math.max(0, Math.min(100, (Math.abs(raw)/10)*100 + confBoost));
       d.regime = d.volRatio > 1.5 ? 'TREND' : d.liqProx < 0.4 ? 'SQUEEZE' : 'CHOP';
-      d.lastUpdate = Date.now();
     }
 
-    // ================= SENTIMENT TERMINAL =================
+    // ================= SENTIMENT =================
     function generateContextAlerts() {
       const btc = state.data['BTCUSDT'];
-      const xaut = state.data['XAUTUSD'];
       const alerts = [];
-            // Rule-based micro-sentiment generation
-      if (btc.oiDelta > 2.5) alerts.push({cat:'critical', title:'⚠️ LEVERAGE SPIKE', text:`BTC OI jumped +${btc.oiDelta.toFixed(2)}% in 15m. High liquidation risk if price reverses.`, impact:3});
-      if (btc.oiDelta < -2.0) alerts.push({cat:'chain', title:'📉 POSITION UNWINDING', text:`BTC OI dropped -${Math.abs(btc.oiDelta).toFixed(2)}%. Longs liquidating or de-risking.`, impact:2});
-      if (btc.funding > 0.015) alerts.push({cat:'flow', title:'💸 OVERCROWDED LONGS', text:`Funding at ${btc.funding.toFixed(3)}%. Shorts paying heavy premium. Contrarian warning.`, impact:2});
-      if (btc.funding < -0.008) alerts.push({cat:'flow', title:' SHORTS PAYING PREMIUM', text:`Negative funding: ${btc.funding.toFixed(3)}%. Long squeeze potential if buyers step in.`, impact:2});
-      if (Math.abs(btc.cvd) > 25 && btc.volRatio < 0.9) alerts.push({cat:'macro', title:'🌫️ LOW-VOL CVD SPIKE', text:`CVD: ${btc.cvd.toFixed(1)} but volume thin. Institutional absorption or spoofing? Verify with price action.`, impact:2});
-      if (btc.liqProx < 0.35) alerts.push({cat:'critical', title:'🔥 LIQUIDATION ZONE NEARBY', text:`Price within 0.35% of estimated liquidation cluster. Expect volatility expansion.`, impact:3});
-      if (xaut.volRatio > 1.6 && xaut.cvd > 5) alerts.push({cat:'chain', title:'🟡 GOLD FLOW SURGE', text:`XAUT showing strong buy-side aggression. Safe-haven rotation detected.`, impact:2});
       
-      // Add timestamps and IDs
+      if (btc.oiDelta > 2.5) alerts.push({cat:'critical', title:'⚠️ LEVERAGE SPIKE', text:`BTC OI jumped +${btc.oiDelta.toFixed(2)}%`});
+      if (btc.funding > 0.015) alerts.push({cat:'flow', title:'💸 OVERCROWDED LONGS', text:`Funding at ${(btc.funding*100).toFixed(2)}%`});
+      if (btc.liqProx < 0.35) alerts.push({cat:'critical', title:'🔥 LIQUIDATION ZONE', text:`Price near liquidation cluster`});
+      if (btc.volRatio < 0.8) alerts.push({cat:'macro', title:'🌫️ LOW VOLUME', text:`Volume ratio: ${btc.volRatio.toFixed(2)}x`});
+      
       alerts.forEach(a => {
-        a.id = Date.now() + Math.random();
+        a.id = Date.now();
         a.time = new Date().toLocaleTimeString();
       });
       
-      state.alerts = [...alerts, ...state.alerts].slice(0, 20);
+      state.alerts = [...alerts, ...state.alerts].slice(0, 15);
       renderTerminal();
-      document.getElementById('alert-badge').textContent = `🔔 ${state.alerts.length}`;
     }
 
     function filterTerm(cat) {
@@ -323,32 +281,36 @@
       const filtered = state.currentFilter === 'all' ? state.alerts : state.alerts.filter(a => a.cat === state.currentFilter);
       
       if (filtered.length === 0) {
-        list.innerHTML = '<div class="term-empty">No alerts in this category yet.</div>';
+        list.innerHTML = '<div style="text-align:center;color:var(--muted);padding:1rem;font-size:0.75rem">No alerts yet. Waiting for market conditions...</div>';
         return;
       }
       
       list.innerHTML = filtered.map(a => `
-        <div class="term-item ${a.cat}" onclick="this.classList.toggle('expanded')">
+        <div class="term-item ${a.cat}">
           <div class="term-top">
-            <span class="term-cat" style="color:${a.cat==='critical'?'var(--red)':a.cat==='macro'?'var(--orange)':a.cat==='flow'?'var(--neon)':'var(--green)'}">${a.title}</span>
+            <span class="term-cat" style="color:${a.cat==='critical'?'var(--red)':a.cat==='macro'?'var(--orange)':a.cat==='flow'?'var(--neon)':'var(--muted)'}">${a.title}</span>
             <span class="term-time">${a.time}</span>
           </div>
           <div class="term-text">${a.text}</div>
-          <div class="term-detail">Impact: ${'⭐'.repeat(a.impact)} | Category: ${a.cat.toUpperCase()} | Tap to collapse</div>
-        </div>
-      `).join('');
+        </div>      `).join('');
+      
+      document.getElementById('alert-badge').textContent = ` ${state.alerts.length}`;
     }
 
-    // ================= UI RENDERER =================
+    // ================= RENDERER =================
     function renderCards() {
-      const container = document.getElementById('cards-container');      const regimeBadge = document.getElementById('regime-badge');
+      const container = document.getElementById('cards-container');
+      if (!container) {
+        console.error('Cards container not found!');
+        return;
+      }
       
-      regimeBadge.textContent = state.data['BTCUSDT'].regime;
-      regimeBadge.className = `badge ${state.data['BTCUSDT'].regime.toLowerCase()}`;
+      document.getElementById('regime-badge').textContent = state.data['BTCUSDT'].regime;
       
-      container.innerHTML = CONFIG.assets.map(a => {
-        const d = state.data[a.symbol];
-        if (!d) return '';
+      const cardsHTML = ['BTCUSDT', 'XAUTUSD'].map(sym => {
+        const d = state.data[sym];
+        if (!d || !d.symbol) return '';
+        
         const isUp = d.price > d.vwap;
         const confColor = d.conf > 70 ? 'var(--green)' : d.conf > 40 ? 'var(--neon)' : 'var(--orange)';
         
@@ -366,7 +328,7 @@
               <div class="box"><div class="label">VPIN</div><div class="value">${d.indicators.vpin.toFixed(1)}</div></div>
               <div class="box"><div class="label">VOL</div><div class="value">${d.volRatio.toFixed(2)}x</div></div>
             </div>
-            <div class="signal-box ${d.sigClass}">${d.signal}</div>
+            <div class="signal-box ${d.sigClass || 'neutral'}">${d.signal}</div>
             <div class="conf-bar"><div class="conf-fill" style="width:${d.conf}%;background:${confColor}"></div></div>
             <div class="meta">
               <span>Score: ${d.score.toFixed(1)} | VM: ${d.vm.toFixed(2)}</span>
@@ -375,10 +337,15 @@
           </div>
         `;
       }).join('');
+      
+      container.innerHTML = cardsHTML;
     }
 
-    // ================= BOOT =================
-    window.addEventListener('DOMContentLoaded', init);
+    // ================= BOOT =================    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
   </script>
 </body>
 </html>
