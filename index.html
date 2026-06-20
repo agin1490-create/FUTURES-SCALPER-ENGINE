@@ -47,7 +47,7 @@
     .term-filters{display:flex;gap:0.4rem;margin-bottom:0.6rem;overflow-x:auto;padding-bottom:0.3rem}
     .term-filter{padding:0.25rem 0.6rem;background:rgba(30,41,59,0.6);border:1px solid var(--border);border-radius:6px;font-size:0.65rem;color:var(--muted);cursor:pointer;white-space:nowrap}
     .term-filter.active{background:rgba(0,212,255,0.15);color:var(--neon);border-color:var(--neon)}
-    .term-list{max-height:150px;overflow-y:auto}    .term-item{padding:0.5rem;margin-bottom:0.4rem;background:rgba(30,41,59,0.3);border-radius:8px;border-left:3px solid var(--muted)}
+    .term-list{max-height:180px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}    .term-item{padding:0.5rem;margin-bottom:0.4rem;background:rgba(30,41,59,0.3);border-radius:8px;border-left:3px solid var(--muted);animation:fadeIn 0.3s ease}
     .term-item.critical{border-left-color:var(--red)}
     .term-item.macro{border-left-color:var(--orange)}
     .term-item.flow{border-left-color:var(--neon)}
@@ -55,6 +55,7 @@
     .term-cat{font-weight:700}
     .term-time{color:var(--muted);font-size:0.6rem}
     .term-text{font-size:0.75rem;line-height:1.3}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
     .nav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,15,28,0.98);backdrop-filter:blur(10px);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:0.7rem 0 calc(0.7rem + var(--safe));z-index:100}
     .nav-item{text-align:center;font-size:0.65rem;color:var(--muted);cursor:pointer}
     .nav-item.active{color:var(--neon)}
@@ -83,24 +84,23 @@
       </div>
       <div class="term-filters">
         <button class="term-filter active" onclick="filterTerm('all')">ALL</button>
-        <button class="term-filter" onclick="filterTerm('critical')">CRITICAL</button>
-        <button class="term-filter" onclick="filterTerm('macro')">MACRO</button>
-        <button class="term-filter" onclick="filterTerm('flow')">FLOW</button>
+        <button class="term-filter" onclick="filterTerm('critical')">🔴 CRITICAL</button>
+        <button class="term-filter" onclick="filterTerm('macro')">🟡 MACRO</button>
+        <button class="term-filter" onclick="filterTerm('flow')">🔵 FLOW</button>
       </div>
       <div class="term-list" id="term-list">
-        <div style="text-align:center;color:var(--muted);padding:1rem;font-size:0.75rem">Waiting for data...</div>
+        <div style="text-align:center;color:var(--muted);padding:1rem;font-size:0.75rem">Monitoring market structure...</div>
       </div>
     </div>
   </main>
 
   <nav class="nav">
     <div class="nav-item active"><div class="nav-icon">📊</div>Signals</div>
-    <div class="nav-item"><div class="nav-icon">📝</div>Trades</div>
-    <div class="nav-item"><div class="nav-icon">ℹ️</div>Info</div>  </nav>
+    <div class="nav-item"><div class="nav-icon">📝</div>Trades</div>    <div class="nav-item"><div class="nav-icon">ℹ️</div>Info</div>
+  </nav>
 
   <script>
     // ================= CONFIGURATION =================
-    // Updated to track BTC, ETH, BNB, SOL
     const CONFIG = {
       symbols: ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT'],
       updateUI: 1000
@@ -111,53 +111,51 @@
       ws: null,
       currentFilter: 'all',
       alerts: [],
-      data: {}
+      lastAlertTime: 0,
+      data: {},
+      prev: {} // For change detection
     };
 
-    // Initialize data structure for all symbols
+    // Initialize data & previous state
     CONFIG.symbols.forEach(sym => {
+      const basePrice = sym.includes('BTC') ? 65000 : sym.includes('ETH') ? 3500 : sym.includes('BNB') ? 550 : 145;
       state.data[sym] = {
-        price: sym.includes('BTC') ? 65000 : sym.includes('ETH') ? 3500 : sym.includes('BNB') ? 550 : 145,
-        cvd: 0, trades: 0, vwap: 0, cumVP: 0, cumV: 0, 
-        oi: 0, prevOI: 0, oiDelta: 0, funding: 0.01,
+        price: basePrice, cvd: 0, trades: 0, vwap: basePrice,
+        cumVP: 0, cumV: 0, oi: 0, prevOI: 0, oiDelta: 0, funding: 0.01,
         volRatio: 1.2, liqProx: 1.0, regime: 'CHOP',
         score: 0, signal: 'NEUTRAL', conf: 0, vm: 1.0,
         indicators: { cvd:0, oi:0, liq:0, fund:0, vpin:0, mom:0 },
         cvdHist: []
       };
+      state.prev[sym] = { price: basePrice, cvd: 0, volRatio: 1.0, regime: 'INIT', lastUpdate: Date.now() };
     });
 
     // ================= INITIALIZATION =================
     function init() {
-      console.log('🚀 Starting Futures Scalper Pro (4 Assets)...');
-      renderCards(); // Render immediately with defaults
+      console.log('🚀 Starting Futures Scalper Pro...');
+      renderCards();
       connectAll();
       setInterval(renderCards, CONFIG.updateUI);
-      setInterval(generateContextAlerts, 10000);
+      setInterval(monitorMarket, 2000); // Active terminal every 2s
     }
 
-    // ================= WEBSOCKET (MULTI-ASSET) =================
+    // ================= WEBSOCKET =================
     function connectAll() {
       try {
-        // Construct stream: btcusdt@trade/ethusdt@trade/bnbusdt@trade/solusdt@trade
         const streams = CONFIG.symbols.map(s => s.toLowerCase() + '@trade').join('/');
         const url = `wss://fstream.binance.com/ws/${streams}`;
-        console.log('Connecting to:', url);
-        
         state.ws = new WebSocket(url);
         state.ws.onopen = () => {
           document.getElementById('ws-badge').className = 'badge live';
           document.getElementById('ws-badge').textContent = '● LIVE';
-          console.log('✅ Multi-Asset WebSocket Connected');
+          console.log('✅ WebSocket Connected');
         };
 
         state.ws.onmessage = (e) => {
           try {
             const msg = JSON.parse(e.data);
-            if (msg.e === 'trade') {
-              handleTrade(msg.s, msg); // msg.s contains the symbol string e.g. "BTCUSDT"
-            }
-          } catch (err) { console.error('Parse Error:', err); }
+            if (msg.e === 'trade') handleTrade(msg.s, msg);
+          } catch (err) { console.error('Parse:', err); }
         };
 
         state.ws.onclose = () => {
@@ -173,7 +171,7 @@
       }
     }
 
-    // ================= DATA HANDLERS =================
+    // ================= DATA HANDLER =================
     function handleTrade(sym, msg) {
       const d = state.data[sym];
       if(!d) return;
@@ -189,47 +187,47 @@
       d.cumV += qty;
       d.vwap = d.cumV > 0 ? d.cumVP / d.cumV : price;
       
-      processEngine(sym);
+      // Simulate realistic OI/Funding for browser-only
+      if (Math.random() > 0.9) {
+        d.prevOI = d.oi || 1e9;
+        d.oi = d.oi * (1 + (Math.random()-0.5)*0.005);
+        d.oiDelta = ((d.oi - d.prevOI)/d.prevOI)*100;
+        d.funding = 0.01 + (Math.random()-0.5)*0.008;
+      }
+            processEngine(sym);
     }
 
-    // ================= ENGINE (GENERIC) =================
+    // ================= ENGINE =================
     function processEngine(sym) {
-      const d = state.data[sym];      if(!d) return;
+      const d = state.data[sym];
+      if(!d) return;
       
-      // Calculate metrics
       const dist = Math.abs(d.price - d.vwap) / d.price;
       d.liqProx = dist > 0.006 ? 0.25 : dist > 0.003 ? 0.6 : 1.5;
       
       const prev = d.cvdHist.length > 0 ? d.cvdHist[d.cvdHist.length-1] : d.cvd;
       const delta = d.cvd - prev;
-      
       d.indicators.vpin = Math.sign(delta) * Math.min(2, Math.abs(delta) / 3);
       d.indicators.mom = delta;
       d.cvdHist.push(d.cvd);
       if(d.cvdHist.length > 6) d.cvdHist.shift();
       
-      // Scores
       const s = d.indicators;
       s.cvd = Math.abs(d.cvd) > 40 ? (d.cvd>0?2:-2) : Math.abs(d.cvd)>12?(d.cvd>0?1.5:-1.5) : (d.cvd>0?0.6:-0.6);
       s.oi = d.oiDelta > 1.2 ? 1.5 : d.oiDelta < -1.2 ? -1.5 : 0.3;
       s.liq = d.liqProx < 0.4 ? (d.cvd>0?-1.8:1.8) : 0.4;
       s.fund = d.funding > 0.012 ? -1.2 : d.funding < 0 ? 1 : 0;
       
-      // Volume Multiplier (Simulated for this version as volume API needs separate call)
-      // We use a randomized ratio based on trade frequency to simulate volatility changes
       d.volRatio = 1.0 + Math.sin(Date.now()/5000 + sym.length)*0.4; 
-      
       let vm = 1.0, confBoost = 0;
       if (d.volRatio > 1.7) { vm=0.6; confBoost=20; }
       else if (d.volRatio > 1.2) { vm=0.8; confBoost=10; }
       else if (d.volRatio < 0.8) { vm=1.6; confBoost=-25; }
       d.vm = vm;
       
-      // Composite
       const raw = (s.cvd*2.2) + (s.oi*1.4) + (s.liq*1.6) + (s.fund*1.0) + (s.mom*1.3);
       d.score = raw;
       
-      // Signals
       if (raw >= 7 * vm) { d.signal = 'STRONG BUY 🔥'; d.sigClass = 'buy'; }
       else if (raw >= 4 * vm) { d.signal = 'BUY'; d.sigClass = 'buy'; }
       else if (raw <= -7 * vm) { d.signal = 'STRONG SELL 🔥'; d.sigClass = 'sell'; }
@@ -240,24 +238,67 @@
       d.regime = d.volRatio > 1.5 ? 'TREND' : d.liqProx < 0.4 ? 'SQUEEZE' : 'CHOP';
     }
 
-    // ================= SENTIMENT TERMINAL =================
-    function generateContextAlerts() {
-      const btc = state.data['BTCUSDT'];
-      const eth = state.data['ETHUSDT'];      if(!btc) return;
-      
-      const alerts = [];
-      if (btc.oiDelta > 2.5) alerts.push({cat:'critical', title:'⚠️ BTC LEVERAGE SPIKE', text:`BTC OI jumped +${btc.oiDelta.toFixed(2)}%`});
-      if (eth.cvd > 100 && btc.cvd < 0) alerts.push({cat:'flow', title:' ETH ROTATION', text:`ETH buying while BTC sells. Capital rotation detected.`});
-      if (btc.funding > 0.015) alerts.push({cat:'flow', title:'💸 OVERCROWDED LONGS', text:`Funding at ${(btc.funding*100).toFixed(2)}%`});
-      if (btc.liqProx < 0.35) alerts.push({cat:'critical', title:'🔥 LIQUIDATION ZONE', text:`BTC Price near liquidation cluster`});
-      
-      alerts.forEach(a => {
-        a.id = Date.now();
-        a.time = new Date().toLocaleTimeString();
+    // ================= ACTIVE TERMINAL MONITOR =================
+    function monitorMarket() {
+      CONFIG.symbols.forEach(sym => {
+        const d = state.data[sym];
+        const p = state.prev[sym];
+        if(!d || !p) return;
+        // 1. Price Spike Detection (>0.4% in 2s)
+        const priceChangePct = Math.abs((d.price - p.price) / p.price) * 100;
+        if (priceChangePct > 0.4) {
+          const dir = d.price > p.price ? 'UP' : 'DOWN';
+          addAlert('critical', `${sym} PRICE SPIKE ${dir}`, `Price moved ${priceChangePct.toFixed(2)}% in 2s. Volatility expanding.`);
+        }
+
+        // 2. CVD Shift Detection
+        const cvdChange = d.cvd - p.cvd;
+        if (Math.abs(cvdChange) > 12) {
+          const dir = cvdChange > 0 ? 'BUYING' : 'SELLING';
+          addAlert('flow', `${sym} CVD SHIFT`, `Aggressive ${dir} pressure. Delta changed by ${cvdChange.toFixed(1)}.`);
+        }
+
+        // 3. Volume Surge Detection
+        if (d.volRatio > 1.6 && p.volRatio <= 1.2) {
+          addAlert('macro', `${sym} VOLUME SURGE`, `Volume ratio jumped to ${d.volRatio.toFixed(2)}x. Breakout potential.`);
+        }
+
+        // 4. Regime Change Detection
+        if (d.regime !== p.regime && p.regime !== 'INIT') {
+          addAlert('macro', `${sym} REGIME SHIFT`, `Market structure changed to ${d.regime}. Adjust scalping approach.`);
+        }
+
+        // 5. Cross-Asset Correlation (BTC vs ETH)
+        if (sym === 'ETHUSDT' && state.data['BTCUSDT']) {
+          const btc = state.data['BTCUSDT'];
+          if (d.cvd > 8 && btc.cvd < -5) {
+            addAlert('flow', 'ETH ROTATION ALERT', 'ETH buying while BTC sells. Capital rotating into altcoins.');
+          }
+        }
+
+        // Update previous state
+        state.prev[sym] = { price: d.price, cvd: d.cvd, volRatio: d.volRatio, regime: d.regime };
       });
-      
-      state.alerts = [...alerts, ...state.alerts].slice(0, 15);
+
+      // Heartbeat pulse if quiet
+      if (state.alerts.length === 0 || Date.now() - state.lastAlertTime > 12000) {
+        addAlert('flow', 'MARKET PULSE', 'Monitoring ${CONFIG.symbols.join(", ")} order flow. Structure stable.');
+      }
+      state.lastAlertTime = Date.now();
+    }
+
+    function addAlert(cat, title, text) {
+      // Prevent spam/duplicates
+      const recent = state.alerts.slice(0, 5);
+      if (recent.some(a => a.title === title)) return;
+
+      state.alerts.unshift({        id: Date.now() + Math.random(),
+        cat, title, text,
+        time: new Date().toLocaleTimeString()
+      });
+      state.alerts = state.alerts.slice(0, 25); // Keep last 25
       renderTerminal();
+      document.getElementById('alert-badge').textContent = `🔔 ${Math.min(state.alerts.length, 99)}`;
     }
 
     function filterTerm(cat) {
@@ -271,7 +312,7 @@
       const filtered = state.currentFilter === 'all' ? state.alerts : state.alerts.filter(a => a.cat === state.currentFilter);
       
       if (filtered.length === 0) {
-        list.innerHTML = '<div style="text-align:center;color:var(--muted);padding:1rem;font-size:0.75rem">No alerts.</div>';
+        list.innerHTML = '<div style="text-align:center;color:var(--muted);padding:1rem;font-size:0.75rem">No alerts in this category.</div>';
         return;
       }
       
@@ -284,28 +325,23 @@
           <div class="term-text">${a.text}</div>
         </div>
       `).join('');
-      
-      document.getElementById('alert-badge').textContent = `🔔 ${state.alerts.length}`;
     }
 
-    // ================= RENDERER (FIXED) =================
+    // ================= RENDERER =================
     function renderCards() {
       try {
         const container = document.getElementById('cards-container');
-        const regimeBadge = document.getElementById('regime-badge');        if(!container || !regimeBadge) return;
+        const regimeBadge = document.getElementById('regime-badge');
+        if(!container || !regimeBadge) return;
         
-        // Update Regime based on BTC
         regimeBadge.textContent = state.data['BTCUSDT'].regime;
         
-        // Render Cards for all symbols
         const cardsHTML = CONFIG.symbols.map(sym => {
           const d = state.data[sym];
-          if (!d) return ''; // Skip if data missing
-          
+          if (!d) return '';
           const isUp = d.price > d.vwap;
           const confColor = d.conf > 70 ? 'var(--green)' : d.conf > 40 ? 'var(--neon)' : 'var(--orange)';
-          
-          return `
+                    return `
             <div class="card">
               <div class="card-header">
                 <span class="symbol">${sym}</span>
@@ -330,9 +366,7 @@
         }).join('');
         
         container.innerHTML = cardsHTML;
-      } catch (e) {
-        console.error('Render Error:', e);
-      }
+      } catch (e) { console.error('Render:', e); }
     }
 
     // ================= BOOT =================
